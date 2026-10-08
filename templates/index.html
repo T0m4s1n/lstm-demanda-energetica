@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>predicción de demanda eléctrica</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>demanda eléctrica de la hora siguiente</h1>
+    <p>la entrada es una ventana de horas ya observadas. el clima, el precio y la demanda de la hora objetivo no entran al modelo. la salida es esa demanda, en mw.</p>
+  </header>
+  <main>
+    <section class="predictor">
+      <div class="panel">
+        <div class="controls">
+          <label>modelo
+            <select id="model"></select>
+          </label>
+          <button type="button" class="secondary" id="reload">cargar ventana histórica</button>
+          <button type="button" class="secondary" id="align">alinear calendario</button>
+        </div>
+        <div class="table-wrap">
+          <table id="window"></table>
+        </div>
+      </div>
+      <aside class="panel result">
+        <h2>predicción</h2>
+        <p class="meta" id="target-hour"></p>
+        <p class="figure" id="figure">—</p>
+        <p class="unit">mw</p>
+        <svg class="spark" id="spark" role="img" aria-label="demanda de la ventana y punto predicho"></svg>
+        <button type="button" id="predict">predecir hora siguiente</button>
+        <p class="notice" id="notice">cargando la última ventana de la serie limpia.</p>
+      </aside>
+    </section>
+
+    <section class="section">
+      <h2>resultados</h2>
+      <p class="meta">métricas del conjunto de prueba, en mw originales. épocas es el punto restaurado por early stopping, no la última época calculada. la fila resaltada es el modelo recomendado.</p>
+      <div class="table-wrap">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>modelo</th>
+              <th>ventana</th>
+              <th>mae</th>
+              <th>mse</th>
+              <th>rmse</th>
+              <th>mape</th>
+              <th>r²</th>
+              <th>épocas</th>
+            </tr>
+          </thead>
+          <tbody id="results-body"></tbody>
+        </table>
+      </div>
+      <p class="meta" id="baseline-note"></p>
+    </section>
+
+    <section class="section">
+      <h2>gráficas</h2>
+      <div class="charts" id="gallery"></div>
+    </section>
+
+    <section class="section" id="analysis">
+      <h2>análisis</h2>
+      <div id="analysis-list"></div>
+    </section>
+
+    <section class="section">
+      <h2>limpieza y partición</h2>
+      <div class="counts" id="counts"></div>
+      <p id="split"></p>
+      <div class="rules" id="rules"></div>
+      <div id="importance"></div>
+    </section>
+  </main>
+  <footer>
+    <p>tensorflow no tiene rueda para python 3.14 en esta máquina, así que las lstm están en pytorch. el escalador usa solo el tramo de entrenamiento y la partición es cronológica.</p>
+  </footer>
+  <script src="/static/app.js"></script>
+</body>
+</html>

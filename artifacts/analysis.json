@@ -1,0 +1,49 @@
+{
+  "questions": [
+    {
+      "number": 1,
+      "question": "por que lstm es apropiada para este problema",
+      "answer": "la demanda de la hora siguiente depende de como viene la serie, no de una foto aislada. hay un ciclo diario, un ciclo semanal y una inercia de pocas horas. una lstm recorre esa ventana hora por hora y, con las compuertas de olvido y de actualizacion, conserva la parte del pasado reciente que sigue siendo util.\nen cada hora entran varias variables a la vez: demanda, clima, precio y calendario. el modelo no obliga a que ese efecto sea lineal ni a fijar de antemano un numero de rezagos.\nla referencia de persistencia, repetir la ultima demanda, deja en prueba un mae de 35,56 mw y un r² de 0,70. la lstm base con 12 horas baja el mae a 19,49 mw y sube el r² a 0,908."
+    },
+    {
+      "number": 2,
+      "question": "que efecto tiene cambiar la ventana temporal",
+      "answer": "alargar la ventana empeora el pronostico de la hora siguiente. en la lstm base el mae de prueba pasa de 19,49 mw (12 h) a 20,58 mw (24 h) y a 21,14 mw (48 h). el rmse sigue el mismo orden: 24,68, 25,95 y 26,79 mw.\ndoce horas ya contienen la rampa de la manana o de la tarde y el nivel reciente. las horas mas lejanas aportan poco para el salto de una sola hora.\nla serie limpia tiene 355 huecos. una ventana solo se arma si todas sus horas son consecutivas, asi que las secuencias de entrenamiento bajan de 9294 (12 h) a 4084 (48 h). la atencion recupera una parte de ese terreno en 48 h (mae 20,28 mw) y sigue por detras de los modelos de 12 h."
+    },
+    {
+      "number": 3,
+      "question": "existe sobreajuste",
+      "answer": "el error en megavatios de entrenamiento y el de prueba se mantienen en la misma banda. en la lstm base de 12 horas el mae es 19,54 mw en entrenamiento, 20,53 mw en validacion y 19,49 mw en prueba. en la profunda de 12 horas es 19,65, 20,44 y 19,43 mw. el hueco mas amplio entre entrenamiento y prueba es de cerca de 0,4 mw.\nlas curvas de perdida bajan juntas. donde se separan, la validacion queda un poco por encima y early stopping detiene el entrenamiento. el r² de entrenamiento ronda 0,93 y el de prueba 0,91, en parte porque el tramo de entrenamiento cubre mas estaciones."
+    },
+    {
+      "number": 4,
+      "question": "que es y que efecto tiene dropout",
+      "answer": "dropout apaga, en cada paso de entrenamiento, una fraccion aleatoria de neuronas. la red no puede apoyarse siempre en las mismas unidades y reparte lo que aprende. en evaluacion se usan todas las neuronas.\nla lstm base aplica una tasa de 0,2 sobre el estado final. la profunda usa 0,3, 0,3 y 0,2 entre sus tres capas. la de atencion usa 0,3 sobre la secuencia y 0,2 antes de la salida.\nel efecto visible es que la perdida de entrenamiento, medida sin dropout, no se despega de la curva de validacion."
+    },
+    {
+      "number": 5,
+      "question": "que es y que efecto tiene early stopping",
+      "answer": "early stopping vigila el mse de validacion. si durante 6 epocas ese valor no mejora al menos en 0,00001, el entrenamiento se corta y se restauran los pesos de la mejor epoca. el tope es 30 epocas.\nseis de los nueve modelos pararon antes del tope. la lstm profunda de 12 horas se detuvo en la epoca 25 y se evaluo con la 19. la profunda de 24 horas se quedo con la epoca 14. la base de 12 horas llego a 30 y su mejor validacion fue la epoca 27.\nel modelo que se mide es el que mejor se comportaba en validacion, antes de la prueba."
+    },
+    {
+      "number": 6,
+      "question": "mas neuronas implican necesariamente mejores resultados",
+      "answer": "no en este problema. la lstm profunda tiene 139041 parametros, la de atencion 60545 y la base 21825.\nen 12 horas la profunda mejora el mae en 0,05 mw (19,43 contra 19,49). en 24 horas es la peor de las tres (20,91 mw). en 48 horas queda detras de la atencion (21,02 contra 20,28 mw). anadir capas y unidades no mejora el pronostico de la hora siguiente."
+    },
+    {
+      "number": 7,
+      "question": "que modelo recomendaria para produccion y por que",
+      "answer": "la lstm base con ventana de 12 horas. en prueba tiene mae 19,49 mw, mse 608,98, rmse 24,68 mw, mape 3,33 % y r² 0,9078, con la epoca 27.\nla profunda de 12 horas tiene el rmse mas bajo del tablero, 24,61 mw, a 0,06 mw de la base. por debajo de medio megavatio ese margen no cambia una decision de operacion. la base usa unas seis veces menos parametros y necesita una racha de 12 horas seguidas, no de 48.\nfrente a la persistencia (mae 35,56 mw en la misma ventana) recorta el error casi a la mitad."
+    },
+    {
+      "number": 8,
+      "question": "que variables pueden influir mas en la demanda",
+      "answer": "al permutar bloques en la prueba del modelo recomendado, el calendario sube el mae 55,3 mw, el clima 12,9 mw, la demanda reciente 1,0 mw y el precio 0,5 mw.\ndentro del calendario mandan el periodo del dia (+30,0 mw) y el fin de semana (+20,0 mw). la hora, por si sola, sube 3,6 mw porque el periodo ya describe el reloj. radiacion (+4,0 mw) y temperatura (+3,3 mw) son las meteorologicas que mas mueven el error.\nes lo que usa el modelo, no una causa fisica: el calendario fija el perfil de actividad y el clima lo corrige."
+    },
+    {
+      "number": 9,
+      "question": "que limitaciones tiene el modelo",
+      "answer": "pronostica una sola hora y solo con informacion hasta la hora anterior. no recibe el clima ni el precio de esa hora. un apagon, un evento masivo o una temperatura fuera del rango conservado en la limpieza (0 °c a 40 °c) queda fuera de lo que la red vio.\nen prueba la mediana del error absoluto es 16,1 mw y el promedio (mae) es 19,5 mw. el percentil 95 llega a 48 mw y el maximo a 93 mw. las horas 5, 7 y 12 son las mas dificiles.\nhacen falta 12 horas consecutivas. cada faltante o anomalia eliminada abre un hueco. la prueba cubre solo del 13 de septiembre al 31 de diciembre de 2026. la atencion de 48 h reparte el peso casi por igual, cerca de 1/48."
+    }
+  ]
+}

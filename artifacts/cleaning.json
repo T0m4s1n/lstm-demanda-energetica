@@ -1,0 +1,64 @@
+{
+  "original_rows": 17550,
+  "invalid_timestamps": 0,
+  "exact_duplicates_removed": 30,
+  "timestamps_with_conflicting_values": 0,
+  "sorted_chronologically": true,
+  "hour_mismatch": 0,
+  "weekday_mismatch": 0,
+  "month_mismatch": 0,
+  "weekend_mismatch": 0,
+  "period_label_not_canonical": 17520,
+  "period_inconsistent_with_hour": 60,
+  "rows_with_missing_measurements": 279,
+  "missing_by_column": {
+    "temperatura_c": 70,
+    "humedad_pct": 70,
+    "viento_kmh": 70,
+    "precio_kwh": 70
+  },
+  "rows_by_anomaly_rule": {
+    "demand_outside_300_to_1050_mw": 23,
+    "temperature_outside_0_to_40_c": 24,
+    "humidity_outside_0_to_100": 9,
+    "wind_negative_or_above_80_kmh": 22,
+    "price_non_positive_or_above_60": 9,
+    "negative_radiation": 0,
+    "negative_precipitation": 0
+  },
+  "rows_with_any_anomaly": 86,
+  "rows_dropped_missing_or_anomaly": 365,
+  "threshold_reasons": {
+    "demand_mw": "La masa de la serie está entre unos 350 y 970 MW. Por debajo de 300 MW o por encima de 1050 MW hay picos aislados que a la hora siguiente vuelven a 400-800 MW: no es una rampa real. Esas filas se eliminan, no se reemplazan.",
+    "temperature_c": "El clima de esta serie vive entre unos 4 °C y 33 °C. Bajo 0 °C o sobre 40 °C no hay continuidad con esa masa: son fallas de sensor. No se sustituyen por un promedio.",
+    "humidity_pct": "Una humedad fuera de 0-100 % es físicamente imposible. La fila se elimina.",
+    "wind_kmh": "Una velocidad negativa es imposible. Por encima de 80 km/h hay un hueco respecto del tramo continuo (hasta unos 67 km/h) y los valores llegan a 117 km/h. Esas filas se eliminan.",
+    "price_kwh": "Un precio no positivo, o por encima de 60, queda fuera de la banda observada (el percentil 99.9 está cerca de 42). La fila se elimina, no se recorta.",
+    "radiation_and_precipitation": "Un valor negativo sería imposible. En este archivo no aparece.",
+    "missing_values": "No se imputa nada. Una hora sin medición deja un hueco.",
+    "period_of_day": "El texto trae mayúsculas, espacios y la palabra mañana con distinta codificación. Algunas etiquetas tampoco coinciden con la hora. Hora, día, mes y fin de semana ya coinciden con la marca de tiempo, así que el periodo se recalcula desde la hora."
+  },
+  "clean_rows": 17155,
+  "gaps_longer_than_one_hour": 355,
+  "start": "2025-01-01 00:00:00",
+  "end": "2026-12-31 23:00:00",
+  "target_column_vs_next_hour_demand": {
+    "consecutive_pairs_with_target": 16799,
+    "exact_matches": 16782,
+    "mismatches": 17
+  },
+  "split": {
+    "train_rows": 12008,
+    "val_rows": 2573,
+    "test_rows": 2574,
+    "train_start": "2025-01-01 00:00:00",
+    "train_end": "2026-05-26 20:00:00",
+    "val_start": "2026-05-26 21:00:00",
+    "val_end": "2026-09-13 09:00:00",
+    "test_start": "2026-09-13 10:00:00",
+    "test_end": "2026-12-31 23:00:00",
+    "train_fraction": 0.7,
+    "val_fraction": 0.15,
+    "test_fraction": 0.15
+  }
+}
